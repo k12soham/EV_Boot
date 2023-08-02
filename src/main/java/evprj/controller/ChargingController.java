@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import evprj.CustomWebSocketHandler;
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
+import evprj.entity.EVChargingStation;
 import evprj.entity.OCPPMessage;
 import evprj.service.ChargingService;
 
@@ -29,6 +30,8 @@ public class ChargingController {
 	public ChargingStation saveChargingStation(@RequestBody ChargingStation chargingStation) {
 		return chargingService.chargingStation(chargingStation);
 	}
+	
+	
 
 	@PostMapping("/saveChargingSession")
 	public ChargingSession saveChargingSession(@RequestBody ChargingSession chargingSession) {
@@ -70,6 +73,16 @@ public class ChargingController {
         return "Hello, " + message + "!";
     }
     
+
+    
+    /***************************************************************************************************************/
+    
+    
+    @PostMapping("/saveEVChargingStation")
+	public ResponseEntity<?> saveEVChargingStation(@RequestBody EVChargingStation evChargingStation) {
+		return chargingService.saveEVchargingStation(evChargingStation);
+	}
+
     @GetMapping("/battery")
     public void Battery() {
     	CustomWebSocketHandler customWebSocketHandler = new CustomWebSocketHandler();
@@ -77,4 +90,5 @@ public class ChargingController {
     }
     
     
+
 }
