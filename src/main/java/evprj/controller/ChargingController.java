@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
+import evprj.entity.EVChargingStation;
 import evprj.entity.OCPPMessage;
 import evprj.service.ChargingService;
 
@@ -28,6 +29,8 @@ public class ChargingController {
 	public ChargingStation saveChargingStation(@RequestBody ChargingStation chargingStation) {
 		return chargingService.chargingStation(chargingStation);
 	}
+	
+	
 
 	@PostMapping("/saveChargingSession")
 	public ChargingSession saveChargingSession(@RequestBody ChargingSession chargingSession) {
@@ -68,4 +71,13 @@ public class ChargingController {
         // For simplicity, we'll just reply with "Hello, <message>!"
         return "Hello, " + message + "!";
     }
+    
+    
+    /***************************************************************************************************************/
+    
+    
+    @PostMapping("/saveEVChargingStation")
+	public ResponseEntity<?> saveEVChargingStation(@RequestBody EVChargingStation evChargingStation) {
+		return chargingService.saveEVchargingStation(evChargingStation);
+	}
 }
