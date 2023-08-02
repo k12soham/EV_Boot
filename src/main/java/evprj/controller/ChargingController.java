@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import evprj.CustomWebSocketHandler;
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
 import evprj.entity.EVChargingStation;
@@ -72,6 +73,7 @@ public class ChargingController {
         return "Hello, " + message + "!";
     }
     
+
     
     /***************************************************************************************************************/
     
@@ -80,4 +82,13 @@ public class ChargingController {
 	public ResponseEntity<?> saveEVChargingStation(@RequestBody EVChargingStation evChargingStation) {
 		return chargingService.saveEVchargingStation(evChargingStation);
 	}
+
+    @GetMapping("/battery")
+    public void Battery() {
+    	CustomWebSocketHandler customWebSocketHandler = new CustomWebSocketHandler();
+        customWebSocketHandler.startBatteryUpdateScheduler();
+    }
+    
+    
+
 }

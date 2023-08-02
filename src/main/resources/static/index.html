@@ -1,29 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WebSocket Test</title>
+    <title>Battery Percentage</title>
 </head>
 <body>
-    <h1>WebSocket Test</h1>
-    <input type="text" id="message" placeholder="Enter your message">
-    <button onclick="sendMessage()">Send</button>
-    <div id="response"></div>
+    <h1>Battery Percentage: <span id="batteryPercentage">Connecting...</span></h1>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script>
         const socket = new WebSocket('ws://localhost:8090/websocket');
+        const stompClient = Stomp.over(socket);
 
-        socket.onopen = () => {
-            console.log('WebSocket connection opened.');
-        };
+        stompClient.connect({}, function () {
+            console.log('WebSocket connection established.');
 
-        socket.onmessage = (event) => {
-            document.getElementById('response').innerHTML = event.data;
-        };
-
-        function sendMessage() {
-            const message = document.getElementById('message').value;
-            socket.send(message);
-        }
+            stompClient.subscribe('/topic/battery', function (message) {
+                const batteryPercentage = JSON.parse(message.body);
+                document.getElementById('batteryPercentage').innerText = batteryPercentage + '%';
+            });
+        });
     </script>
 </body>
 </html>
