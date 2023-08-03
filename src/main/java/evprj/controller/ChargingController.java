@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
+import evprj.entity.EVChargingStation;
 import evprj.entity.OCPPMessage;
 import evprj.service.ChargingService;
 
@@ -29,6 +31,8 @@ public class ChargingController {
 	public ChargingStation saveChargingStation(@RequestBody ChargingStation chargingStation) {
 		return chargingService.chargingStation(chargingStation);
 	}
+	
+	
 
 	@PostMapping("/saveChargingSession")
 	public ChargingSession saveChargingSession(@RequestBody ChargingSession chargingSession) {
@@ -70,6 +74,7 @@ public class ChargingController {
         return "Hello, " + message + "!";
     }
     
+
   /*  @GetMapping("/batteryapi")
     @ResponseBody
     public String Battery() {
@@ -84,4 +89,24 @@ public class ChargingController {
         return modelAndView;
     }
     
+
+
+    
+    /***************************************************************************************************************/
+    
+    
+    @PostMapping("/saveEVChargingStation")
+	public ResponseEntity<?> saveEVChargingStation(@RequestBody EVChargingStation evChargingStation) {
+		return chargingService.saveEVchargingStation(evChargingStation);
+	}
+
+ 
+    
+    @GetMapping("/getByStationId")
+    public ResponseEntity<?> getByStationId(@RequestParam int charging_station_id){
+    	return chargingService.getByStationId(charging_station_id);
+    }
+    
+    
+
 }
