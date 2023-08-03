@@ -84,6 +84,7 @@ public class ChargingController {
     
     @GetMapping("/batteryapi")
     public ModelAndView index () {
+    	
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("battery.html");
         return modelAndView;
