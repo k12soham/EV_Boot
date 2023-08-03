@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-import evprj.CustomWebSocketHandler;
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
 import evprj.entity.EVChargingStation;
@@ -75,6 +75,22 @@ public class ChargingController {
     }
     
 
+  /*  @GetMapping("/batteryapi")
+    @ResponseBody
+    public String Battery() {
+    	return "battery";
+    }*/
+    
+    
+    @GetMapping("/batteryapi")
+    public ModelAndView index () {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("battery.html");
+        return modelAndView;
+    }
+    
+
+
     
     /***************************************************************************************************************/
     
@@ -84,11 +100,7 @@ public class ChargingController {
 		return chargingService.saveEVchargingStation(evChargingStation);
 	}
 
-    @GetMapping("/battery")
-    public void Battery() {
-    	CustomWebSocketHandler customWebSocketHandler = new CustomWebSocketHandler();
-        customWebSocketHandler.startBatteryUpdateScheduler();
-    }
+ 
     
     @GetMapping("/getByStationId")
     public ResponseEntity<?> getByStationId(@RequestParam int charging_station_id){

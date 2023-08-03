@@ -7,99 +7,88 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import com.fasterxml.jackson.core.JsonParseException;
+
+import evprj.entity.BatteryChargingData;
 @Component
-public class CustomWebSocketHandler implements WebSocketHandler    {
+public class CustomWebSocketHandler extends TextWebSocketHandler     {
 
 	 private int batteryPercentage = 10;
 	    private final Set<WebSocketSession> sessions = new HashSet<>();
 	    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+
+	    
+	    
+	    
+	    
+	    
+	    
+	    
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		System.out.println("WebSocket connection opened.");
 		sessions.add(session);
-		 sendBatteryPercentage(session);
+		// sendBatteryPercentage(session);
+		//handleMessage(session);
+		// sendInitialData(session);
 	}
 
 
 	
+	
+
 	@Override
-
-	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-		//int payload = Integer.parseInt((String) message.getPayload());
-
-		// payload=payload+1;
-		// =message.getPayload().toString();
-		//session.sendMessage(new TextMessage("Battery percent, " + payload + "%"));
-
-		//scheduler.scheduleAtFixedRate(() -> sendUpdate(session, payload), 0, 1, TimeUnit.SECONDS);
-
-	}
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
+        String payload = message.getPayload();
+        try {
+            int newBatteryPercentage = Integer.parseInt(payload);
+            
+            //scheduler.scheduleAtFixedRate(() -> updateBatteryPercentage(newBatteryPercentage), 0, 10, TimeUnit.SECONDS);
+            updateBatteryPercentage(newBatteryPercentage);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
 
 	
+	/* private void sendInitialData(WebSocketSession session) throws IOException {
+		 
+	        int initialBatteryPercentage = 10;
+	        String batteryMessage = String.valueOf(initialBatteryPercentage);
 	
-	
-	 @MessageMapping("/getBattery")
-	    @SendTo("/topic/battery")
-	    public String getBattery() {
-	        return String.valueOf(batteryPercentage);
-	    }
+	        session.sendMessage(new TextMessage(batteryMessage));
+	        
+	    }*/
+	 
 
-	    private void sendBatteryPercentage(WebSocketSession session) throws IOException {
-	        String message = String.valueOf(batteryPercentage);
-	        session.sendMessage(new TextMessage(message));
-	    }
-
-	    public void addBatteryPercentage() throws IOException {
-	    	System.out.println("fff");
-	        if (batteryPercentage < 100) {
-	            batteryPercentage += 1;
-	            broadcastBatteryPercentage();
-	        }
-	    }
-
-	    private String broadcastBatteryPercentage() throws IOException {
-	        String message = String.valueOf(batteryPercentage);
-	        TextMessage textMessage = new TextMessage(message);
-	        WebSocketSession session = null;
-	        /*for (WebSocketSession session : sessions) {
+	    public void updateBatteryPercentage(int newBatteryPercentage) {
+	    	
+	        String batteryMessage = String.valueOf(newBatteryPercentage);
+	        TextMessage batteryTextMessage = new TextMessage(batteryMessage);
+	        System.out.println(batteryTextMessage);
+	        for (WebSocketSession session : sessions) {
 	            if (session.isOpen()) {
 	                try {
-	                	System.out.println("yyyy");
-	                	System.out.println(textMessage);
-	                    session.sendMessage(textMessage);
+	                    session.sendMessage(batteryTextMessage);
+	                 
 	                } catch (IOException e) {
-	                	System.out.println("uuuu");
 	                    e.printStackTrace();
 	                }
 	            }
-	        }*/
-	        session.sendMessage(textMessage);
-return  textMessage.getPayload();
-	       
+	        }
 	    }
-
-	    public void startBatteryUpdateScheduler() {
-	    	System.out.println("sdsds");
-	        scheduler.scheduleAtFixedRate(() -> {
-				try {
-					addBatteryPercentage();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}, 0, 10, TimeUnit.SECONDS);
-	    }
-
-
+	
+	
+	
 	
 	
 	
@@ -107,7 +96,7 @@ return  textMessage.getPayload();
 	
 
 	
-	private void sendUpdate(WebSocketSession session, int payload) {
+	/*private void sendUpdate(WebSocketSession session, int payload) {
 		try {
 			// Replace this with your logic to fetch real-time data or updates
 			long timeMillis = System.currentTimeMillis();
@@ -122,8 +111,20 @@ return  textMessage.getPayload();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
+	
+	
+    
+
+	
+	
+	
+	
+	
+	
+	
+	
 	@Override
 	public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
 		//sessions.close(session);

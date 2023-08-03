@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Battery Percentage</title>
+</head>
+<body>
+ 
+ <div style="text-align: center;"">
+   Enter initial battery: <input style="height: 30px; width: 200px;" type="number" id="initialPercentage" min="0" max="100" placeholder="Initial battery percentage"><br/><br/>
+    Enter capacity: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="number" style="height: 30px; width: 200px;"id="capacity" min="0" max="100" placeholder="Charging capacity"><br/><br/>
+    <button style="height: 30px; width: 150px;" onclick="startUpdatingBattery()">Start</button>
+
+      
+      
+         <h2> Battery Percentage from web socket: <span id="message">0</span>%</h2>
+ </div>
+    <script>
+    const socket = new WebSocket('ws://localhost:8090/websocket');
+	let newbatteryPercentage=10;
+        socket.onopen = function () {
+            console.log('WebSocket connection established.');
+           
+        };
+
+        socket.onmessage = function (event) {
+			console.log(event.data)
+            showMessage(event.data);
+        };
+        
+        
+        	
+        let batteryPercentage = 0;
+        let intervalId;
+        let chargingCapacity = 0; // Default charging capacity
+
+       /* function updateBatteryPercentage() {
+            batteryPercentage += 1;
+            document.getElementById('batteryPercentage').innerText = `${batteryPercentage}%`;
+
+            if (batteryPercentage >= 100) {
+                // Stop updating when the battery percentage reaches 100%
+                clearInterval(intervalId);
+            }
+            socket.send(batteryPercentage);
+        }*/
+        
+        function updateBatteryPercentage() {
+            const chargingPower = chargingCapacity / 10; // Normalize charging capacity to charging power
+
+            batteryPercentage += chargingPower;
+            if (batteryPercentage >= 100) {
+                // Stop updating when the battery percentage reaches 100%
+                clearInterval(intervalId);
+            }
+
+            document.getElementById('message').innerText = `${Math.floor(batteryPercentage)}`;
+            socket.send(Math.floor(batteryPercentage)); // Send the battery percentage to the WebSocket server
+        }
+
+        function startUpdatingBattery() {
+            const initialPercentage = parseInt(document.getElementById('initialPercentage').value);
+            if (isNaN(initialPercentage) || initialPercentage < 0 || initialPercentage > 100) {
+                alert('Please enter a valid initial battery percentage (0 to 100).');
+                return;
+            }
+  const capacity = parseInt(document.getElementById('capacity').value);
+            if (isNaN(capacity) || capacity < 0 || capacity > 100) {
+                alert('Please enter a valid charging capacity (0 to 100).');
+                return;
+            }
+
+            // Set the initial battery percentage and charging capacity entered by the user
+            batteryPercentage = initialPercentage;
+            chargingCapacity = capacity;
+          
+            document.getElementById('message').innerText = `${batteryPercentage}`;
+
+            // Start updating the battery percentage every 10 seconds
+            intervalId = setInterval(updateBatteryPercentage, 500);
+        }
+        
+        
+        function showMessage(message) {
+
+            const messageElement = document.getElementById('message');
+            messageElement.innerText = message;
+          
+        }
+        
+         
+        
+    </script>
+</body>
+</html>
