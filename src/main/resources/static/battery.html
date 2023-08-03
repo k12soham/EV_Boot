@@ -15,6 +15,7 @@
          <h2> Battery Percentage from web socket: <span id="message">0</span>%</h2>
  </div>
     <script>
+
     const socket = new WebSocket('ws://localhost:8090/websocket');
 	let newbatteryPercentage=10;
         socket.onopen = function () {
