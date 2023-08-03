@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-import evprj.CustomWebSocketHandler;
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
 import evprj.entity.OCPPMessage;
@@ -70,11 +70,18 @@ public class ChargingController {
         return "Hello, " + message + "!";
     }
     
-    @GetMapping("/battery")
-    public void Battery() {
-    	CustomWebSocketHandler customWebSocketHandler = new CustomWebSocketHandler();
-        customWebSocketHandler.startBatteryUpdateScheduler();
-    }
+  /*  @GetMapping("/batteryapi")
+    @ResponseBody
+    public String Battery() {
+    	return "battery";
+    }*/
     
+    
+    @GetMapping("/batteryapi")
+    public ModelAndView index () {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("battery.html");
+        return modelAndView;
+    }
     
 }
