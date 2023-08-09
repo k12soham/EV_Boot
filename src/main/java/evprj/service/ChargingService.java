@@ -47,10 +47,8 @@ public class ChargingService {
     
     public ResponseEntity<?> getByStationId(Integer charging_station_id){
     	EVChargingStation evChargingStation = new EVChargingStation(); 
-//    	List<EVChargingStation> l = new ArrayList<>();
     	evChargingStation=	evChargingStationRepository.findById(charging_station_id).get();
-//    	System.out.println(l);
-  System.out.println(evChargingStation.getCharging_connector_type());
+
     	return new ResponseEntity<>(evChargingStation, HttpStatus.OK);
     }
 
