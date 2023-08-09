@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Client Test</title>
+    <script src="https://cdn.socket.io/4.1.2/socket.io.js"></script>
+</head>
+<body>
+    <h1>Socket.IO Client Test</h1>
+    <button id="sendButton">Send Message</button>
+    <script>
+        const socket = io('http://localhost:8090'); // Connect to your Socket.IO server
+
+        document.getElementById('sendButton').addEventListener('click', () => {
+            const message = 'Hello from Socket.IO Client!';
+            socket.emit('chat-message', message); // Emit the "chat-message" event
+        });
+
+        // Listen for other events or responses from the server if needed
+    </script>
+</body>
+</html>

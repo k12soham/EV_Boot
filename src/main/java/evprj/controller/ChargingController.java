@@ -3,8 +3,6 @@ package evprj.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,15 +11,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+
+
 import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
 import evprj.entity.EVChargingStation;
 import evprj.entity.OCPPMessage;
 import evprj.service.ChargingService;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 @RestController
 @CrossOrigin
 public class ChargingController {
+	
+	
 	@Autowired
 	ChargingService chargingService;
 
@@ -65,14 +69,14 @@ public class ChargingController {
         // Process the RemoteStopTransaction OCPP message sent by the simulator
         // You can deserialize the JSON payload into your OCPP message model and handle the request here
     }
-    @MessageMapping("/hello")
+   /* @MessageMapping("/hello")
     @SendTo("/topic/greetings")
     public String handleHello(String message) {
     	System.out.println("ssdsdsdyyyy");
         // You can put any logic here to generate the continuous response.
         // For simplicity, we'll just reply with "Hello, <message>!"
         return "Hello, " + message + "!";
-    }
+    }*/
     
 
   /*  @GetMapping("/batteryapi")
@@ -90,6 +94,11 @@ public class ChargingController {
         return modelAndView;
     }
     
+    
+    
+  //  @PostMapping("/aaaa")
+    
+    
 
 
     
@@ -98,6 +107,7 @@ public class ChargingController {
     
     @PostMapping("/saveEVChargingStation")
 	public ResponseEntity<?> saveEVChargingStation(@RequestBody EVChargingStation evChargingStation) {
+    	System.out.println("ssyyy");
 		return chargingService.saveEVchargingStation(evChargingStation);
 	}
 

@@ -21,6 +21,7 @@ public class EVChargingStation {
 	private double charging_current;
 	private String charging_status;
 	private Integer battery_state_of_charge;
+	private Integer battery_percentage;
 	private Date start_charging_time;
 	private Date estimated_end_time;
 	private String charging_error_notification;
@@ -81,6 +82,13 @@ public class EVChargingStation {
 	}
 	public void setBattery_state_of_charge(Integer battery_state_of_charge) {
 		this.battery_state_of_charge = battery_state_of_charge;
+	}
+	
+	public Integer getBattery_percentage() {
+		return battery_percentage;
+	}
+	public void setBattery_percentage(Integer battery_percentage) {
+		this.battery_percentage = battery_percentage;
 	}
 	public Date getStart_charging_time() {
 		return start_charging_time;
