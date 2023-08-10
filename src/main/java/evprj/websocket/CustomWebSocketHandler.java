@@ -58,9 +58,9 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 	
 		String payload = message.getPayload();
 		JsonNode jsonNode = mapper.readTree(payload);
-		String endpoint = jsonNode.get("endpoint").asText();
+		String url_link = jsonNode.get("url_link").asText();
 		int param1 = jsonNode.get("station_id").asInt();
-		if ("/getByStationId".equals(endpoint)) {
+		if ("/getByStationId".equals(url_link)) {
 
 			EVChargingStation evChargingStation = new EVChargingStation();
 
@@ -139,7 +139,6 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 	 private String convertToJSON(EVChargingStation evChargingStation, int batteryPercentage) throws JsonProcessingException {
 		 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
 		   LocalDateTime now = LocalDateTime.now();  
-		   System.out.println(dtf.format(now)); 
 		   String start  =dtf.format(now);
 		 ObjectMapper objectMapper = new ObjectMapper();
 		    ObjectNode jsonNode = objectMapper.createObjectNode();
