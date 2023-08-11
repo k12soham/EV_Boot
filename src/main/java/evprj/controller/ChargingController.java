@@ -17,6 +17,7 @@ import evprj.entity.ChargingSession;
 import evprj.entity.ChargingStation;
 import evprj.entity.EVChargingStation;
 import evprj.entity.OCPPMessage;
+import evprj.repo.EVChargingStationRepository;
 import evprj.service.ChargingService;
 
 @RestController
@@ -77,6 +78,13 @@ public class ChargingController {
     	System.out.println(message);
     
         return "Hello, " + message + "!";
+    }
+    
+    @MessageMapping("/batterypercent")
+    @SendTo("/topic/greetings")
+    public EVChargingStation batterypercent(EVChargingStation evChargingStation) throws Exception {
+    return chargingService.batterypercent(evChargingStation);
+    	
     }
     
     
