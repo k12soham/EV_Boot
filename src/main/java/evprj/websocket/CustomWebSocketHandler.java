@@ -97,7 +97,7 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		 */
 	}
 
-	 private void updateBatteryPercentage(EVChargingStation evChargingStation, int batteryPercentage, double d) throws JsonProcessingException {
+	 private void updateBatteryPercentage(EVChargingStation evChargingStation, int batteryPercentage, double d) throws Exception {
 
 		double chargingPower = d / 10; // Normalize charging capacity to charging power
 
@@ -116,11 +116,12 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 			if (session.isOpen()) {
 				try {
 					if (newBatteryPercentage >= 100) {
-						sessions.remove(session);
+						batteryPercentage =100;
+						sessions.remove(session);	
 						
 					}
 					 TextMessage batteryTextMessage = new TextMessage(json);
-		               
+		               System.out.println(json);
 					session.sendMessage(batteryTextMessage);
 					scheduler.schedule(() -> {
 						try {
