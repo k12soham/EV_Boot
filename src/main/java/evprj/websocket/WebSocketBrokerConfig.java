@@ -53,11 +53,8 @@ public class WebSocketBrokerConfig implements WebSocketConfigurer {
 	
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		/*
-		 * registry.addHandler(new CustomWebSocketHandler(evChargingStationRepository),
-		 * "/websocket") .setAllowedOrigins("*");
-		 */
-		registry.addHandler(new UserWebSocketHandler(userService,evChargingStationRepository,commonUtility), "/websocket")
+		
+		registry.addHandler(new CustomWebSocketHandler(userService,evChargingStationRepository,commonUtility), "/websocket")
 				.setAllowedOrigins("*");
 				
 

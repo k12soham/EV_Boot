@@ -21,7 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import evprj.entity.EVChargingStation;
+import evprj.entity.EVChargingStationUser;
 import evprj.repo.EVChargingStationRepository;
+import evprj.service.UserService;
+import evprj.utility.CommonUtility;
 
 @Component
 
@@ -29,16 +32,17 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 
 	private final Set<WebSocketSession> sessions = new HashSet<>();
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
+	private final UserService userService;
 	private final EVChargingStationRepository evChargingStationRepository;
+	private final evprj.utility.CommonUtility commonUtility;
 
-	public CustomWebSocketHandler(EVChargingStationRepository evChargingStationRepository) {
+	public CustomWebSocketHandler(UserService userService, EVChargingStationRepository evChargingStationRepository, CommonUtility commonUtility) {
 		this.evChargingStationRepository = evChargingStationRepository;
+		this.userService = userService;
+		this.commonUtility = commonUtility;
 	}
 
-	/*
-	 * @PersistenceContext EntityManager entityManager;
-	 */
+	
 
 	String json;
 	int newBatteryPercentage;
@@ -49,17 +53,15 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		System.out.println("WebSocket connection opened.");
 		sessions.add(session);
 
-		/*
-		 * scheduler.schedule(() -> { try { if (newBatteryPercentage >= 100) {
-		 * scheduler.isShutdown(); } else { updateBatteryPercentage(); }
-		 * 
-		 * } catch (Exception e) { e.printStackTrace(); } }, 1, TimeUnit.SECONDS);
-		 */
-
 	}
 
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+	
+	
+		
+		
+		
 		ObjectMapper mapper = new ObjectMapper();
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
@@ -67,8 +69,13 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		Date dt = new Date(start);
 		String payload = message.getPayload();
 		JsonNode jsonNode = mapper.readTree(payload);
+		
 		String url_link = jsonNode.get("url_link").asText();
 		int station_id = jsonNode.get("station_id").asInt();
+		int id;
+		
+		
+		
 		if ("/getByStationId".equals(url_link)) {
 
 			EVChargingStation evChargingStation = new EVChargingStation();
@@ -83,6 +90,27 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 				updateBatteryPercentage(evChargingStation, evChargingStation.getBattery_percentage(),
 						evChargingStation.getCharging_power());
 
+			}else if ("/postUser".equals(url_link)) {
+				String name = jsonNode.get("name").asText();
+				String phone = jsonNode.get("phone").asText();
+				String vehicleDesc = jsonNode.get("vehicleDesc").asText();
+				
+				EVChargingStationUser evChargingStationUser = new EVChargingStationUser();
+				evChargingStationUser.setUserName(name);
+				evChargingStationUser.setPhone(phone);
+				evChargingStationUser.setVehicleDes(vehicleDesc);
+				
+				EVChargingStationUser evStationUser = userService.createNewUser(evChargingStationUser);
+				if (evStationUser != null) {
+					getUserDetails(evStationUser);
+				}
+			} else if ("/getUserById".equals(url_link)) {
+				id = jsonNode.get("id").asInt();
+				EVChargingStationUser evChargingStationUser = new EVChargingStationUser();
+				evChargingStationUser = userService.getUserById(id);
+				if (evChargingStationUser != null) {
+					getUserDetails(evChargingStationUser);
+				}
 			}
 
 		} else {
@@ -93,24 +121,23 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		}
 
 	}
+	
+	private void getUserDetails(EVChargingStationUser evChargingStationUser) throws Exception {
+		String json = commonUtility.convertToJSONForUser(evChargingStationUser);
+		for (WebSocketSession session : sessions) {
+			if (session.isOpen()) {
+				try {
+					TextMessage textMessage = new TextMessage(json);
+					System.out.println(json);
+					session.sendMessage(textMessage);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
-	/*
-	 * private void updateBatteryPercentageNew(EVChargingStation evChargingStation,
-	 * int batteryPercentage, double power) throws Exception { double chargingPower
-	 * = power / 10; batteryPercentage += chargingPower; newBatteryPercentage =
-	 * batteryPercentage;
-	 * 
-	 * int remainingPercentage = 100 - batteryPercentage; int estimatedChargingTime
-	 * = (int) (remainingPercentage / (chargingPower / 10) / 60); json =
-	 * convertToJSON(evChargingStation, newBatteryPercentage,
-	 * estimatedChargingTime);
-	 * 
-	 * scheduler.schedule(() -> { try {
-	 * updateBatteryPercentageNew(evChargingStation, newBatteryPercentage, power); }
-	 * catch (Exception e) { e.printStackTrace(); } }, 3, TimeUnit.SECONDS);
-	 * 
-	 * }
-	 */
+	
 
 	private void updateBatteryPercentage(EVChargingStation evChargingStation, int batteryPercentage, double power)
 			throws Exception {
@@ -127,8 +154,7 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 			if (session.isOpen()) {
 				try {
 					if (newBatteryPercentage >= 100) {
-						// evChargingStation.setEstimated_end_time(dt);
-						// evChargingStation =evChargingStationRepository.save(evChargingStation);
+						
 						sessions.remove(session);
 
 					}
@@ -167,8 +193,7 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		} else if (batteryPercentage >= 100) {
 			jsonNode.put("notification", "100");
 		}
-		// jsonNode.put("start-time",start );
-		// Add other properties as needed
+		
 
 		return objectMapper.writeValueAsString(jsonNode);
 	}
