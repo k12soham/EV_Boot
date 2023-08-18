@@ -1,7 +1,5 @@
 package evprj.websocket;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -26,6 +24,7 @@ import evprj.entity.EVChargingStation;
 import evprj.repo.EVChargingStationRepository;
 
 @Component
+
 public class CustomWebSocketHandler extends TextWebSocketHandler {
 
 	private final Set<WebSocketSession> sessions = new HashSet<>();
@@ -41,17 +40,31 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 	 * @PersistenceContext EntityManager entityManager;
 	 */
 
+	String json;
+	int newBatteryPercentage;
+
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
 		System.out.println("WebSocket connection opened.");
 		sessions.add(session);
+
+		/*
+		 * scheduler.schedule(() -> { try { if (newBatteryPercentage >= 100) {
+		 * scheduler.isShutdown(); } else { updateBatteryPercentage(); }
+		 * 
+		 * } catch (Exception e) { e.printStackTrace(); } }, 1, TimeUnit.SECONDS);
+		 */
+
 	}
 
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
-
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		String start = dtf.format(now);
+		Date dt = new Date(start);
 		String payload = message.getPayload();
 		JsonNode jsonNode = mapper.readTree(payload);
 		String url_link = jsonNode.get("url_link").asText();
@@ -64,6 +77,7 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 
 			if (evChargingStation != null) {
 
+				evChargingStation.setStart_charging_time(dt);
 				evChargingStation = evChargingStationRepository.save(evChargingStation);
 
 				updateBatteryPercentage(evChargingStation, evChargingStation.getBattery_percentage(),
@@ -80,6 +94,24 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 
 	}
 
+	/*
+	 * private void updateBatteryPercentageNew(EVChargingStation evChargingStation,
+	 * int batteryPercentage, double power) throws Exception { double chargingPower
+	 * = power / 10; batteryPercentage += chargingPower; newBatteryPercentage =
+	 * batteryPercentage;
+	 * 
+	 * int remainingPercentage = 100 - batteryPercentage; int estimatedChargingTime
+	 * = (int) (remainingPercentage / (chargingPower / 10) / 60); json =
+	 * convertToJSON(evChargingStation, newBatteryPercentage,
+	 * estimatedChargingTime);
+	 * 
+	 * scheduler.schedule(() -> { try {
+	 * updateBatteryPercentageNew(evChargingStation, newBatteryPercentage, power); }
+	 * catch (Exception e) { e.printStackTrace(); } }, 3, TimeUnit.SECONDS);
+	 * 
+	 * }
+	 */
+
 	private void updateBatteryPercentage(EVChargingStation evChargingStation, int batteryPercentage, double power)
 			throws Exception {
 
@@ -87,7 +119,9 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		batteryPercentage += chargingPower;
 		final int newBatteryPercentage = batteryPercentage;
 
-		String json = convertToJSON(evChargingStation, newBatteryPercentage);
+		int remainingPercentage = 100 - batteryPercentage;
+		int estimatedChargingTime = (int) (remainingPercentage / (chargingPower / 10) / 60);
+		String json = convertToJSON(evChargingStation, newBatteryPercentage, estimatedChargingTime);
 
 		for (WebSocketSession session : sessions) {
 			if (session.isOpen()) {
@@ -102,7 +136,6 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 					System.out.println(json);
 
 					session.sendMessage(batteryTextMessage);
-
 					scheduler.schedule(() -> {
 						try {
 							updateBatteryPercentage(evChargingStation, newBatteryPercentage, power);
@@ -110,7 +143,6 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 							e.printStackTrace();
 						}
 					}, 2, TimeUnit.SECONDS);
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -118,7 +150,7 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		}
 	}
 
-	private String convertToJSON(EVChargingStation evChargingStation, int batteryPercentage)
+	private String convertToJSON(EVChargingStation evChargingStation, int batteryPercentage, int estimatedChargingTime)
 			throws JsonProcessingException {
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -126,7 +158,17 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 		jsonNode.put("stationId", evChargingStation.getCharging_station_id());
 		jsonNode.put("name", evChargingStation.getCharging_station_name());
 		jsonNode.put("power", evChargingStation.getCharging_power());
+		jsonNode.put("starttime", evChargingStation.getStart_charging_time().toString());
 		jsonNode.put("batteryPercentage", batteryPercentage);
+		jsonNode.put("endtime", estimatedChargingTime + " Minutes");
+
+		if (batteryPercentage == 90) {
+			jsonNode.put("notification", "90");
+		} else if (batteryPercentage >= 100) {
+			jsonNode.put("notification", "100");
+		}
+		// jsonNode.put("start-time",start );
+		// Add other properties as needed
 
 		return objectMapper.writeValueAsString(jsonNode);
 	}
