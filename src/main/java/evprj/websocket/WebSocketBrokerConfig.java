@@ -2,12 +2,13 @@ package evprj.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 import evprj.repo.EVChargingStationRepository;
+import evprj.service.UserService;
+import evprj.utility.CommonUtility;
 
 @Configuration
 //@EnableWebSocketMessageBroker
@@ -15,8 +16,16 @@ import evprj.repo.EVChargingStationRepository;
 public class WebSocketBrokerConfig implements WebSocketConfigurer {
 //WebSocketMessageBrokerConfigurer {
 	@Autowired
+	private UserService userService;
+	
+	@Autowired
 	private EVChargingStationRepository evChargingStationRepository;
-	/*
+
+	@Autowired 
+	evprj.utility.CommonUtility commonUtility;
+	
+	
+	/* 
 	 * @Autowired
 	 * 
 	 * public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -44,8 +53,13 @@ public class WebSocketBrokerConfig implements WebSocketConfigurer {
 	
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(new CustomWebSocketHandler(evChargingStationRepository), "/websocket")
+		/*
+		 * registry.addHandler(new CustomWebSocketHandler(evChargingStationRepository),
+		 * "/websocket") .setAllowedOrigins("*");
+		 */
+		registry.addHandler(new UserWebSocketHandler(userService,evChargingStationRepository,commonUtility), "/websocket")
 				.setAllowedOrigins("*");
+				
 
 	}
 
